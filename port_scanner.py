@@ -45,10 +45,30 @@ def build_parser():
      scan_parsers.add_argument("--ports", default="1-100", help="port range")
      scan_parsers.add_argument("--timeout", type=float, default=1.0, help="timeout per port in seconds")
      return parser
+def parse_portrange(port_rangestr):
+     #turning the range into a list 
+     if "-" in port_rangestr:
+         start_str, end_str = port_rangestr.split("-")
+         start = int(start_str)
+         end = int(end_str)
+         return list(range(start, end + 1))
+     else:
+         return [int(portrange_str)]
+
 if __name__== "__main__" :
     parser = build_parser()
     args = parser.parse_args()
-    print(args)
+    ports = parse_portrange(args.ports)
+    print(f"Scanning {args.target} (ports {args.ports})...")
+    start = time.time()
+    open_ports = scan_range_thread(args.target, ports, timeout=args.timeout)
+    elapsed = time.time() - start
+    for port in open_ports:
+        print(f"[OPEN] {port}")
+
+    print(f"Scan complete. {len(open_ports)} open ports found in {elapsed:.2f}s")
+
+
 
 
 
